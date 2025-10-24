@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>CallOfFree - بازی رقابتی</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body { font-family: sans-serif; background: #f0f0f0; padding: 20px; direction: rtl; }
+    .section { background: white; padding: 15px; margin-bottom: 20px; border-radius: 10px; }
+    .btn { background: #03a9f4; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    .game { margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h2>🎮 بازی‌های رقابتی CallOfFree</h2>
+
+  <div class="section">
+    <h3>💰 موجودی شما: <span id="balance">5</span>$</h3>
+  </div>
+
+  <div class="section">
+    <h3>🎯 انتخاب بازی</h3>
+
+    <div class="game">
+      <strong>بازی سنگ‌کاغذ‌قیچی</strong><br>
+      ورودی: 1$ | جایزه برنده: 2$<br>
+      <button class="btn" onclick="startGame('سنگ‌کاغذ‌قیچی')">شروع بازی</button>
+    </div>
+
+    <div class="game">
+      <strong>بازی حدس عدد</strong><br>
+      ورودی: 1$ | جایزه برنده: 2$<br>
+      <button class="btn" onclick="startGame('حدس عدد')">شروع بازی</button>
+    </div>
+
+    <div class="game">
+      <strong>بازی سرعت کلیک</strong><br>
+      ورودی: 1$ | جایزه برنده: 2$<br>
+      <button class="btn" onclick="startGame('سرعت کلیک')">شروع بازی</button>
+    </div>
+  </div>
+
+  <div class="section" id="status" style="display:none;">
+    <h3>⏳ در حال پیدا کردن حریف...</h3>
+    <p>اگر تا ۳۰ ثانیه حریفی پیدا نشد، پول شما برگشت داده می‌شود.</p>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    let balance = 5;
+    let gameTimeout;
+
+    function updateBalance() {
+      document.getElementById("balance").innerText = balance;
+    }
+
+    function startGame(gameName) {
+      if (balance < 1) {
+        alert("موجودی کافی نیست!");
+        return;
+      }
+
+      balance -= 1;
+      updateBalance();
+      tg.sendData("شروع بازی: " + gameName);
+
+      document.getElementById("status").style.display = "block";
+
+      gameTimeout = setTimeout(() => {
+        balance += 1;
+        updateBalance();
+        document.getElementById("status").style.display = "none";
+        alert("⛔ حریفی پیدا نشد. پول برگشت داده شد.");
+        tg.sendData("حریف پیدا نشد - پول برگشت خورد");
+      }, 30000); // 30 ثانیه
+    }
+
+    // شبیه‌سازی پیدا شدن حریف و نتیجه بازی
+    setInterval(() => {
+      if (document.getElementById("status").style.display === "block") {
+        if (Math.random() > 0.7) { // احتمال پیدا شدن حریف
+          clearTimeout(gameTimeout);
+          document.getElementById("status").style.display = "none";
+          const win = Math.random() > 0.5;
+          if (win) {
+            balance += 2;
+            alert("🎉 شما برنده شدید! +2$");
+            tg.sendData("نتیجه بازی: برد");
+          } else {
+            alert("😢 شما باختید.");
+            tg.sendData("نتیجه بازی: باخت");
+          }
+          updateBalance();
+        }
+      }
+    }, 5000); // هر ۵ ثانیه بررسی کن
+  </script>
+</body>
+</html>
